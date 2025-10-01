@@ -1,71 +1,123 @@
 <?php
-
-$is_invalid = false;
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    
-    $mysqli = require __DIR__ . "/database.php";
-    
-    $sql = sprintf("SELECT * FROM user
-                    WHERE email = '%s'",
-                   $mysqli->real_escape_string($_POST["email"]));
-    
-    $result = $mysqli->query($sql);
-    
-    $user = $result->fetch_assoc();
-    
-    if ($user) {
-        
-        if (password_verify($_POST["password"], $user["password_hash"])) {
-            
-            session_start();
-            
-            session_regenerate_id();
-            
-            $_SESSION["user_id"] = $user["id"];
-            
-            header("Location: index.php");
-            exit;
-        }
-    }
-    
-    $is_invalid = true;
-}
-
+session_start();
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Login</title>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="css/style1.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+
 <body>
-    
-    <h1>Login</h1>
-    
-    <?php if ($is_invalid): ?>
-        <em>Invalid login</em>
-    <?php endif; ?>
-    
-    <form method="post">
-        <label for="email">email</label>
-        <input type="email" name="email" id="email"
-               value="<?= htmlspecialchars($_POST["email"] ?? "") ?>">
-        
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password">
-        
-        <button>Log in</button>
-    </form>
-    
+  <div class="container">
+    <div class="form-box box">
+
+      <?php
+      include "connection.php";
+
+      if (isset($_POST['login'])) {
+
+        $email = $_POST['email'];
+        $pass = $_POST['password'];
+
+        $sql = "select * from users where email='$email'";
+
+        $res = mysqli_query($conn, $sql);
+
+        if (mysqli_num_rows($res) > 0) {
+
+          $row = mysqli_fetch_assoc($res);
+
+          $password = $row['password'];
+
+          $decrypt = password_verify($pass, $password);
+
+
+          if ($decrypt) {
+            $_SESSION['id'] = $row['id'];
+            $_SESSION['username'] = $row['username'];
+            header("location: home.php");
+
+
+          } else {
+            echo "<div class='message'>
+                    <p>Wrong Password</p>
+                    </div><br>";
+
+            echo "<a href='login.php'><button class='btn'>Go Back</button></a>";
+          }
+
+        } else {
+          echo "<div class='message'>
+                    <p>Wrong Email or Password</p>
+                    </div><br>";
+
+          echo "<a href='login.php'><button class='btn'>Go Back</button></a>";
+
+        }
+
+
+      } else {
+
+
+        ?>
+
+        <header>Login</header>
+        <hr>
+        <form action="#" method="POST">
+
+          <div class="form-box">
+
+
+            <div class="input-container">
+              <i class="fa fa-envelope icon"></i>
+              <input class="input-field" type="email" placeholder="Email Address" name="email">
+            </div>
+
+            <div class="input-container">
+              <i class="fa fa-lock icon"></i>
+              <input class="input-field password" type="password" placeholder="Password" name="password">
+              <i class="fa fa-eye toggle icon"></i>
+            </div>
+
+            <div class="remember">
+              <input type="checkbox" class="check" name="remember_me">
+              <label for="remember">Remember me</label>
+              <span><a href="forgot.php">Forgot password</a></span>
+            </div>
+
+          </div>
+
+
+
+          <input type="submit" name="login" id="submit" value="Login" class="button">
+
+          <div class="links">
+            Don't have an account? <a href="signup.php">Signup Now</a>
+          </div>
+
+        </form>
+      </div>
+      <?php
+      }
+      ?>
+  </div>
+  <script>
+    const toggle = document.querySelector(".toggle"),
+      input = document.querySelector(".password");
+    toggle.addEventListener("click", () => {
+      if (input.type === "password") {
+        input.type = "text";
+        toggle.classList.replace("fa-eye-slash", "fa-eye");
+      } else {
+        input.type = "password";
+      }
+    })
+  </script>
 </body>
+
 </html>
-
-
-
-
-
-
-
-

@@ -5,16 +5,29 @@ requireHospitalAdmin();
 $user = getUserData($_SESSION['user_id']);
 $facility = getUserFacility($_SESSION['user_id']);
 
-// Get inventory for current hospital
+// Inventory will be loaded below with a guard that ensures $facility is valid
+$user = getUserData($_SESSION['user_id']);
+$facility = getUserFacility($_SESSION['user_id']);
+
+// Get inventory for current hospital — guard in case facility lookup failed
 global $pdo;
-$inventory = $pdo->prepare("
-    SELECT i.* 
-    FROM inventory i 
-    WHERE i.facility_id = ? 
-    ORDER BY i.expiration_date ASC
-");
-$inventory->execute([$facility['id']]);
-$inventory = $inventory->fetchAll(PDO::FETCH_ASSOC);
+if (empty($facility) || !is_array($facility) || !isset($facility['id'])) {
+    // If facility is not available, ensure $inventory is an empty array
+    // and set an error message so the UI can show a friendly notice.
+    $inventory = [];
+    if (!isset($error)) {
+        $error = "Facility information not found. Please contact administrator.";
+    }
+} else {
+    $inventory = $pdo->prepare("
+        SELECT i.* 
+        FROM inventory i 
+        WHERE i.facility_id = ? 
+        ORDER BY i.expiration_date ASC
+    ");
+    $inventory->execute([$facility['id']]);
+    $inventory = $inventory->fetchAll(PDO::FETCH_ASSOC);
+}
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -47,24 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="background-animation"></div>
     
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2><a href="dashboard.php" class="logo-link">
-                    <span class="blood-drop">🏥</span>SanguiSense Hospital
-                </a></h2>
-            </div>
-            <div class="nav-menu">
-                <a href="dashboard.php" class="nav-link">Dashboard</a>
-                <a href="inventory.php" class="nav-link active">Blood Inventory</a>
-                <a href="donors.php" class="nav-link">Donors</a>
-                <a href="appointments.php" class="nav-link">Appointments</a>
-                <a href="blood_requests.php" class="nav-link">Blood Requests</a>
-                <a href="analytics.php" class="nav-link">Analytics</a>
-                <a href="../includes/auth.php?logout=1" class="nav-link logout-btn">Logout</a>
-            </div>
-        </div>
-    </nav>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_hospital.php'; ?>
 
     <div class="dashboard-container">
         <div class="dashboard-header">
@@ -117,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 <div class="form-actions">
                     <button type="submit" name="add_inventory" class="btn btn-primary" style="background: var(--hospital-blue);">Add to Inventory</button>
-                    <button type="button" onclick="hideAddForm()" class="btn btn-secondary">Cancel</button>
+                    <button type="button" onclick="hideAddForm()" class="btn btn-secondary"style="background:#ffffff;color:var(--dark-red);border:2px solid var(--dark-red);box-shadow:0 4px 10px rgba(0,0,0,0.1);">Cancel</button>
                 </div>
             </form>
         </div>
@@ -210,9 +206,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         function editInventory(id) {
-            alert('Edit inventory item ' + id + ' - This would open an edit form');
-            // Implementation for editing
-        }
+    window.location.href = 'edit_inventory.php?id=' + id;
+}
         
         function deleteInventory(id) {
             if (confirm('Are you sure you want to delete this inventory item?')) {

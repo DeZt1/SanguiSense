@@ -10,11 +10,15 @@ function requireLogin() {
             redirect('../hospital/login.php');
         } elseif (strpos($current_path, '/bloodbank/') !== false) {
             redirect('../bloodbank/login.php');
+        } elseif (strpos($current_path, '/patient/') !== false) {
+            redirect('../patient/login.php');
         } else {
             redirect('../donor/login.php');
         }
     }
 }
+
+
 
 // Check if user is hospital admin
 function requireHospitalAdmin() {
@@ -60,6 +64,8 @@ function login($email, $password, $portal = null) {
             redirect('../hospital/dashboard.php');
         } elseif ($user['user_type'] == 'bloodbank_admin') {
             redirect('../bloodbank/dashboard.php');
+        } elseif ($user['user_type'] == 'patient') {
+            redirect('../patient/dashboard.php');
         }
         return true;
     }

@@ -49,8 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <p class="auth-link" style="margin-top:1rem;">
                 Don't have an account? <a href="register.php">Register as Blood Bank Admin</a>
             </p>
-            <p class="auth-link">
-                <a href="index.php">← Back to Blood Bank Portal</a>
             </p>
         </div>
     </div>

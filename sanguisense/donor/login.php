@@ -24,18 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="background-animation"></div>
     
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2><a href="index.php">SanguiSense</a></h2>
-            </div>
-            <div class="nav-menu">
-                <a href="index.php" class="nav-link">Home</a>
-                <a href="register.php" class="nav-link">Register</a>
-            </div>
-        </div>
-    </nav>
-
     <div class="auth-container">
         <div class="auth-form">
             <h2>Donor Login</h2>

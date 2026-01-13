@@ -1,0 +1,41 @@
+<?php
+// Patient Portal Sidebar Include
+// Shows only: Dashboard, Find Donors, Send Request, My Requests, Profile, Logout
+
+// Detect current page
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$current_file = basename($path);
+
+$base = '/sanguisense';
+$prefix = $base . '/patient';
+
+// Helper: render nav link with active class if current file matches
+function ss_link($href, $label, $current_file) {
+    $link_file = basename(parse_url($href, PHP_URL_PATH));
+    $is_active = ($link_file === $current_file) ? 'active' : '';
+    return "<a href='{$href}' class='ss-nav-link {$is_active}'>{$label}</a>";
+}
+
+// Output stylesheet
+echo "<link rel=\"stylesheet\" href=\"$base/includes/sidebar.css\">\n";
+
+?>
+
+<aside class="ss-sidebar">
+    <div class="ss-header">
+        <a class="ss-logo" href="<?php echo $base; ?>/patient/index.php">
+            <span class="blood-drop">🩸</span>
+            <span class="ss-title">SanguiSense</span>
+        </a>
+    </div>
+    <nav class="ss-nav">
+        <ul>
+            <li><?php echo ss_link($prefix.'/dashboard.php', 'Dashboard', $current_file); ?></li>
+            <li><?php echo ss_link($prefix.'/find_donors.php', 'Find Donors', $current_file); ?></li>
+            <li><?php echo ss_link($prefix.'/send_request.php', 'Send Request', $current_file); ?></li>
+            <li><?php echo ss_link($prefix.'/request_history.php', 'My Requests', $current_file); ?></li>
+            <li><?php echo ss_link($prefix.'/profile.php', 'Profile', $current_file); ?></li>
+            <li><a href='<?php echo $base; ?>/includes/auth.php?logout=1' class='ss-nav-link'>Logout</a></li>
+        </ul>
+    </nav>
+</aside>

@@ -178,6 +178,144 @@ function restockItem(id) {
 }
 
 function distributeBlood(id) {
-    alert('Distribute blood item ' + id + ' - This would open distribution form');
-    // window.location.href = 'distribute.php?id=' + id;
+    window.location.href = 'distribution.php?id=' + id;
+}
+
+// Restock and inventory functions
+function restockItem(id) {
+    window.location.href = 'inventory.php?action=restock&id=' + id;
+}
+
+// Profile page functions
+function validateProfileForm() {
+    let isValid = true;
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+    const address = document.getElementById('address');
+    
+    // Clear previous errors
+    document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+    
+    // Name validation (3-100 chars)
+    if (name && (name.value.trim().length < 2 || name.value.trim().length > 100)) {
+        document.getElementById('name_error').textContent = 'Name must be 2-100 characters';
+        isValid = false;
+    }
+    
+    // Email validation
+    if (email && email.value.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.value.trim())) {
+            document.getElementById('email_error').textContent = 'Please enter a valid email address';
+            isValid = false;
+        }
+    }
+    
+    // Phone validation (10-15 digits if provided)
+    if (phone && phone.value.trim()) {
+        const phoneRegex = /^\+?[\d\s\-()]+$/;
+        const digitsOnly = phone.value.replace(/\D/g, '');
+        if (!phoneRegex.test(phone.value) || digitsOnly.length < 10 || digitsOnly.length > 15) {
+            document.getElementById('phone_error').textContent = 'Phone must be 10-15 digits';
+            isValid = false;
+        }
+    }
+    
+    // Address validation (if provided, 5-255 chars)
+    if (address && address.value.trim() && (address.value.trim().length < 5 || address.value.trim().length > 255)) {
+        document.getElementById('address_error').textContent = 'Address must be 5-255 characters';
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// Profile picture upload handling
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarUploader = document.getElementById('avatar-uploader');
+    const profilePictureInput = document.getElementById('profile_picture');
+    const pictureForm = document.getElementById('pictureForm');
+    
+    if (avatarUploader && profilePictureInput) {
+        // Click to upload
+        avatarUploader.addEventListener('click', () => {
+            profilePictureInput.click();
+        });
+        
+        // File selection handler
+        profilePictureInput.addEventListener('change', handleProfilePictureChange);
+        
+        // Drag and drop
+        avatarUploader.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            avatarUploader.style.borderColor = 'var(--bloodbank-purple)';
+            avatarUploader.style.backgroundColor = 'rgba(142, 68, 173, 0.15)';
+        });
+        
+        avatarUploader.addEventListener('dragleave', () => {
+            avatarUploader.style.borderColor = 'rgba(142, 68, 173, 0.3)';
+            avatarUploader.style.backgroundColor = 'rgba(142, 68, 173, 0.05)';
+        });
+        
+        avatarUploader.addEventListener('drop', (e) => {
+            e.preventDefault();
+            avatarUploader.style.borderColor = 'rgba(142, 68, 173, 0.3)';
+            avatarUploader.style.backgroundColor = 'rgba(142, 68, 173, 0.05)';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                profilePictureInput.files = files;
+                handleProfilePictureChange({ target: profilePictureInput });
+            }
+        });
+    }
+});
+
+function handleProfilePictureChange(e) {
+    const file = e.target.files[0];
+    const pictureError = document.getElementById('picture_error');
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    
+    // Clear previous error
+    if (pictureError) pictureError.textContent = '';
+    
+    if (!file) return;
+    
+    // Validate file type
+    if (!allowedTypes.includes(file.type)) {
+        if (pictureError) pictureError.textContent = 'Only JPG, PNG, and GIF images are allowed';
+        e.target.value = '';
+        return;
+    }
+    
+    // Validate file size
+    if (file.size > maxSize) {
+        if (pictureError) pictureError.textContent = 'File size must not exceed 5MB';
+        e.target.value = '';
+        return;
+    }
+    
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const previewImage = document.getElementById('preview-image');
+        const previewInitials = document.getElementById('preview-initials');
+        
+        if (previewImage) {
+            previewImage.src = event.target.result;
+            previewImage.style.display = 'block';
+        }
+        if (previewInitials) {
+            previewInitials.style.display = 'none';
+        }
+    };
+    reader.readAsDataURL(file);
+    
+    // Auto-submit the form
+    const pictureForm = document.getElementById('pictureForm');
+    if (pictureForm) {
+        pictureForm.submit();
+    }
 }

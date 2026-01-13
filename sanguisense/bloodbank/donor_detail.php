@@ -46,6 +46,9 @@ $history = $history->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </nav>
+        <?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_bloodbank.php'; ?>
+
+
 
     <div class="dashboard-container">
         <div class="dashboard-header">

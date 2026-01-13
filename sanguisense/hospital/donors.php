@@ -1,19 +1,39 @@
 <?php
+require_once __DIR__ . '/../includes/db_connect.php';
 include '../includes/auth.php';
 requireHospitalAdmin();
 
-// Get all donors
-global $pdo;
-$donors = $pdo->query("SELECT * FROM users WHERE user_type = 'donor' ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+// Get facility for this admin
+$facility = getUserFacility($_SESSION['user_id']);
 
-// Get donation statistics
-$donation_stats = $pdo->query("
-    SELECT u.id, u.name, COUNT(d.id) as donation_count, MAX(d.donation_date) as last_donation
-    FROM users u 
-    LEFT JOIN donations d ON u.id = d.donor_id 
+// Get only donors who have fulfilled (or legacy 'completed') donations at THIS facility
+global $pdo;
+$donors_query = "SELECT DISTINCT u.* 
+    FROM users u
+    JOIN donations d ON u.id = d.donor_id
     WHERE u.user_type = 'donor' 
-    GROUP BY u.id
-")->fetchAll(PDO::FETCH_ASSOC);
+    AND d.facility_id = ? 
+    AND d.status IN ('fulfilled','completed')
+    AND (u.eligibility_status IS NULL OR u.eligibility_status != 'ineligible')
+    ORDER BY u.created_at DESC";
+
+$stmt = $pdo->prepare($donors_query);
+$stmt->execute([$facility['id']]);
+$donors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get donation statistics (treat both 'fulfilled' and legacy 'completed' as fulfilled)
+$stats_query = "SELECT u.id, u.name,
+           COUNT(CASE WHEN d.status IN ('fulfilled','completed') THEN 1 END) as donation_count,
+           MAX(CASE WHEN d.status IN ('fulfilled','completed') THEN d.donation_date ELSE NULL END) as last_donation,
+           COALESCE(SUM(CASE WHEN d.status IN ('fulfilled','completed') THEN d.quantity ELSE 0 END), 0) as total_quantity
+    FROM users u
+    LEFT JOIN donations d ON u.id = d.donor_id AND d.facility_id = ?
+    WHERE u.user_type = 'donor'
+    GROUP BY u.id";
+
+$statsStmt = $pdo->prepare($stats_query);
+$statsStmt->execute([$facility['id']]);
+$donation_stats = $statsStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -27,24 +47,7 @@ $donation_stats = $pdo->query("
 <body>
     <div class="background-animation"></div>
     
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2><a href="dashboard.php" class="logo-link">
-                    <span class="blood-drop">🏥</span>SanguiSense Hospital
-                </a></h2>
-            </div>
-            <div class="nav-menu">
-                <a href="dashboard.php" class="nav-link">Dashboard</a>
-                <a href="inventory.php" class="nav-link">Blood Inventory</a>
-                <a href="donors.php" class="nav-link active">Donors</a>
-                <a href="appointments.php" class="nav-link">Appointments</a>
-                <a href="blood_requests.php" class="nav-link">Blood Requests</a>
-                <a href="analytics.php" class="nav-link">Analytics</a>
-                <a href="../includes/auth.php?logout=1" class="nav-link logout-btn">Logout</a>
-            </div>
-        </div>
-    </nav>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_hospital.php'; ?>
 
     <div class="dashboard-container">
         <div class="dashboard-header">
@@ -83,86 +86,85 @@ $donation_stats = $pdo->query("
 
         <div class="data-table">
             <h3>All Donors</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Blood Type</th>
-                        <th>Phone</th>
-                        <th>City</th>
-                        <th>Donations</th>
-                        <th>Last Donation</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($donors)): ?>
-                        <tr>
-                            <td colspan="9" style="text-align: center;">No donors found</td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($donors as $donor): 
-                            $stats = current(array_filter($donation_stats, function($stat) use ($donor) {
-                                return $stat['id'] == $donor['id'];
-                            }));
-                        ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($donor['name']); ?></td>
-                                <td><?php echo htmlspecialchars($donor['email']); ?></td>
-                                <td><?php echo htmlspecialchars($donor['blood_type']); ?></td>
-                                <td><?php echo htmlspecialchars($donor['phone']); ?></td>
-                                <td><?php echo htmlspecialchars($donor['city']); ?></td>
-                                <td><?php echo $stats['donation_count'] ?? 0; ?></td>
-                                <td>
-                                    <?php 
-                                    if ($stats['last_donation']) {
-                                        echo date('M j, Y', strtotime($stats['last_donation']));
-                                    } else {
-                                        echo 'Never';
-                                    }
-                                    ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    $last_donation = $stats['last_donation'] ?? null;
-                                    $eligible = true;
-                                    
-                                    if ($last_donation) {
-                                        $next_donation_date = date('Y-m-d', strtotime($last_donation . ' + 56 days'));
-                                        if (strtotime($next_donation_date) > time()) {
-                                            $eligible = false;
-                                        }
-                                    }
-                                    ?>
-                                    <span class="status-badge status-<?php echo $eligible ? 'eligible' : 'ineligible'; ?>">
-                                        <?php echo $eligible ? 'Eligible' : 'Ineligible'; ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <button onclick="viewDonor(<?php echo $donor['id']; ?>)" class="btn btn-small" style="background: var(--hospital-blue);">View</button>
-                                    <button onclick="contactDonor(<?php echo $donor['id']; ?>)" class="btn btn-small btn-secondary">Contact</button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+            
+            <?php if (empty($donors)): ?>
+                <div style="text-align: center; padding: 3rem; color: #999;">
+                    <p>No donors found</p>
+                </div>
+            <?php else: ?>
+                <div class="donors-grid">
+                    <?php foreach ($donors as $donor): 
+                        $stats = current(array_filter($donation_stats, function($stat) use ($donor) {
+                            return $stat['id'] == $donor['id'];
+                        }));
+                        
+                        $last_donation = $stats['last_donation'] ?? null;
+                        
+                        // Check eligibility_status from database first
+                        $eligible = true;
+                        if ($donor['eligibility_status'] === 'ineligible') {
+                            $eligible = false;
+                        } else if ($last_donation && $donor['eligibility_status'] !== 'eligible') {
+                            // Only check 56-day rule if eligibility_status is not explicitly set to 'eligible'
+                            $next_donation_date = date('Y-m-d', strtotime($last_donation . ' + 56 days'));
+                            if (strtotime($next_donation_date) > time()) {
+                                $eligible = false;
+                            }
+                        }
+                    ?>
+                        <div class="donor-card">
+                            <div class="donor-card-header">
+                                <div class="donor-info">
+                                    <h4><?php echo htmlspecialchars($donor['name']); ?></h4>
+                                    <p class="donor-blood-type"><?php echo htmlspecialchars($donor['blood_type']); ?></p>
+                                </div>
+                            </div>
+                            
+                            <div class="donor-card-body">
+                                <div class="donor-detail">
+                                    <span class="label">Email</span>
+                                    <span class="value"><?php echo htmlspecialchars($donor['email']); ?></span>
+                                </div>
+                                <div class="donor-detail">
+                                    <span class="label">Phone</span>
+                                    <span class="value"><?php echo htmlspecialchars($donor['phone']); ?></span>
+                                </div>
+                                <div class="donor-detail">
+                                    <span class="label">City</span>
+                                    <span class="value"><?php echo htmlspecialchars($donor['city']); ?></span>
+                                </div>
+                                <div class="donor-stats-row">
+                                    <div class="stat">
+                                        <span class="stat-label">Donations</span>
+                                        <span class="stat-value"><?php echo $stats['donation_count'] ?? 0; ?></span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-label">Last Donation</span>
+                                        <span class="stat-value"><?php echo ($stats['last_donation'] ? date('M j, Y', strtotime($stats['last_donation'])) : 'Never'); ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="donor-card-actions">
+                                <button onclick="viewDonor(<?php echo $donor['id']; ?>)" class="btn btn-small btn-primary">View Details</button>
+                                <button onclick="contactDonor(<?php echo $donor['id']; ?>)" class="btn btn-small btn-secondary">Contact</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
     <script src="js/script.js"></script>
     <script>
         function viewDonor(id) {
-            alert('View donor details ' + id);
-            // window.location.href = 'donor_details.php?id=' + id;
-        }
+    window.location.href = 'donor_details.php?id=' + id;
+}
         
         function contactDonor(id) {
-            alert('Contact donor ' + id);
-            // window.location.href = 'contact_donor.php?id=' + id;
-        }
+    window.location.href = 'contact_donor.php?id=' + id;
+}
     </script>
 </body>
 </html>

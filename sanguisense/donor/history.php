@@ -3,6 +3,19 @@ include '../includes/auth.php';
 requireLogin();
 
 $user = getUserData($_SESSION['user_id']);
+$message = '';
+$error = '';
+
+// Check for session messages
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message'];
+    unset($_SESSION['message']);
+}
+
+if (isset($_SESSION['error'])) {
+    $error = $_SESSION['error'];
+    unset($_SESSION['error']);
+}
 
 // Get donation history
 global $pdo;
@@ -28,22 +41,7 @@ $donations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <div class="background-animation"></div>
     
-<nav class="navbar">
-    <div class="nav-container">
-        <div class="nav-logo">
-            <h2><a href="index.php" class="logo-link">
-                <span class="blood-drop">🩸</span>SanguiSense
-            </a></h2>
-        </div>
-        <div class="nav-menu">
-            <a href="dashboard.php" class="nav-link">Dashboard</a>
-            <a href="profile.php" class="nav-link">Profile</a>
-            <a href="schedule.php" class="nav-link">Schedule</a>
-            <a href="history.php" class="nav-link">History</a>
-            <a href="../includes/auth.php?logout=1" class="nav-link logout-btn">Logout</a>
-        </div>
-    </div>
-</nav>
+<?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_donor.php'; ?>
 
     <div class="dashboard-container">
         <div class="dashboard-header">
@@ -51,8 +49,20 @@ $donations = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <p>Track your blood donation journey</p>
         </div>
 
+        <?php if ($message): ?>
+            <div class="alert alert-success" style="margin-bottom: 1.5rem;">
+                <?php echo htmlspecialchars($message); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <div class="alert alert-error" style="margin-bottom: 1.5rem;">
+                <?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
+
         <div class="history-container">
-            <div class="history-stats">
+                <div class="history-stats">
                 <div class="stat-card">
                     <h3>Total Donations</h3>
                     <p class="stat-number"><?php echo count($donations); ?></p>
@@ -69,19 +79,7 @@ $donations = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         ?>
                     </p>
                 </div>
-                <div class="stat-card">
-                    <h3>Next Eligible</h3>
-                    <p class="stat-number">
-                        <?php
-                        if ($user['last_donation_date']) {
-                            $next_date = date('M j, Y', strtotime($user['last_donation_date'] . ' + 56 days'));
-                            echo $next_date;
-                        } else {
-                            echo 'Now';
-                        }
-                        ?>
-                    </p>
-                </div>
+                <!-- 'Next Eligible' removed from UI -->
             </div>
 
             <div class="donations-list">

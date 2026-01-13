@@ -1,0 +1,167 @@
+/* Sidebar styles for SanguiSense portals */
+:root {
+    --ss-sidebar-width: 220px;
+    --ss-bg: #0b2340; /* deep blue */
+    --ss-accent: #e53935; /* red accent */
+    --ss-text: #ffffff;
+    --ss-muted: rgba(255, 255, 255, 0.8);
+    --ss-hover-bg: rgba(255, 255, 255, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.ss-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--ss-sidebar-width);
+    background: linear-gradient(180deg, var(--ss-bg), #072033);
+    padding: 18px 12px;
+    box-sizing: border-box;
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.4);
+}
+
+.ss-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 8px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.ss-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--ss-text);
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.ss-logo:hover {
+    color: var(--ss-accent);
+    text-shadow: 0 0 8px rgba(229, 57, 53, 0.5);
+}
+
+.blood-drop {
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+.ss-title {
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.ss-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ss-nav li {
+    margin: 6px 0;
+}
+
+.ss-nav .ss-nav-link {
+    display: block;
+    padding: 11px 14px;
+    border-radius: 6px;
+    color: var(--ss-muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.ss-nav .ss-nav-link:hover {
+    color: var(--ss-text);
+    background: var(--ss-hover-bg);
+    padding-left: 18px;
+}
+
+.ss-nav .ss-nav-link.active {
+    background: linear-gradient(90deg, var(--ss-accent), #b71c1c);
+    color: white;
+    box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+    padding-left: 18px;
+    font-weight: 700;
+}
+
+.ss-nav .ss-nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 60%;
+    background: white;
+    border-radius: 0 2px 2px 0;
+}
+
+/* Main content offset to prevent hiding behind fixed sidebar */
+body {
+    margin-left: var(--ss-sidebar-width);
+}
+
+/* Ensure pages with custom backgrounds work well */
+.background-animation {
+    margin-left: calc(-1 * var(--ss-sidebar-width));
+}
+
+/* Responsive: collapse sidebar on small screens */
+@media (max-width: 800px) {
+    :root {
+        --ss-sidebar-width: 0;
+    }
+
+    .ss-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 10px;
+        margin-left: 0;
+        flex-direction: row;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .ss-header {
+        margin-bottom: 0;
+        border-bottom: none;
+        margin-right: 12px;
+    }
+
+    .ss-nav {
+        flex: 1;
+        margin-left: 12px;
+    }
+
+    .ss-nav ul {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .ss-nav .ss-nav-link {
+        padding: 8px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    body {
+        margin-left: 0;
+    }
+
+    .background-animation {
+        margin-left: 0;
+    }
+}
+

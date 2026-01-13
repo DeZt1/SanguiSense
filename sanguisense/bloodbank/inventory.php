@@ -19,18 +19,58 @@ $inventory = $inventory->fetchAll(PDO::FETCH_ASSOC);
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['add_inventory'])) {
-        $blood_type = $_POST['blood_type'];
-        $quantity = $_POST['quantity'];
-        $expiration_date = $_POST['expiration_date'];
+        $blood_type = $_POST['blood_type'] ?? '';
+        $quantity = $_POST['quantity'] ?? '';
+        $expiration_date = $_POST['expiration_date'] ?? '';
         
-        try {
-            $stmt = $pdo->prepare("INSERT INTO inventory (facility_id, blood_type, quantity, expiration_date) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$facility['id'], $blood_type, $quantity, $expiration_date]);
-            $success = "Blood stock added successfully!";
-            header("Location: inventory.php?success=1");
-            exit();
-        } catch(PDOException $e) {
-            $error = "Failed to add blood stock: " . $e->getMessage();
+        // ===== SERVER-SIDE VALIDATION =====
+        $validation_errors = [];
+        
+        // Validate blood type
+        $valid_types = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+        if (empty($blood_type)) {
+            $validation_errors[] = "Blood type must be selected.";
+        } elseif (!in_array($blood_type, $valid_types)) {
+            $validation_errors[] = "Invalid blood type selected.";
+        }
+        
+        // Validate quantity
+        if (empty($quantity)) {
+            $validation_errors[] = "Quantity is required.";
+        } elseif (!is_numeric($quantity) || $quantity < 1) {
+            $validation_errors[] = "Quantity must be a positive number.";
+        } elseif ($quantity > 1000) {
+            $validation_errors[] = "Quantity cannot exceed 1000 units.";
+        }
+        
+        // Validate expiration date
+        if (empty($expiration_date)) {
+            $validation_errors[] = "Expiration date is required.";
+        } else {
+            $exp_timestamp = strtotime($expiration_date);
+            $today_timestamp = strtotime(date('Y-m-d'));
+            if ($exp_timestamp <= $today_timestamp) {
+                $validation_errors[] = "Expiration date must be in the future.";
+            }
+            // Check if date is reasonable (not more than 42 days from now for blood)
+            $max_date = strtotime(date('Y-m-d', strtotime('+42 days')));
+            if ($exp_timestamp > $max_date) {
+                $validation_errors[] = "Expiration date cannot be more than 42 days from now.";
+            }
+        }
+        
+        if (empty($validation_errors)) {
+            try {
+                $stmt = $pdo->prepare("INSERT INTO inventory (facility_id, blood_type, quantity, expiration_date, status) VALUES (?, ?, ?, ?, 'available')");
+                $stmt->execute([$facility['id'], $blood_type, $quantity, $expiration_date]);
+                $success = "Blood stock added successfully!";
+                header("Location: inventory.php?success=1");
+                exit();
+            } catch(PDOException $e) {
+                $error = "Failed to add blood stock: " . $e->getMessage();
+            }
+        } else {
+            $error = "Please fix the following errors:\n• " . implode("\n• ", $validation_errors);
         }
     }
 }
@@ -47,24 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="background-animation"></div>
     
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2><a href="dashboard.php" class="logo-link">
-                    <span class="blood-drop">🩸</span>SanguiSense Blood Bank
-                </a></h2>
-            </div>
-            <div class="nav-menu">
-                <a href="dashboard.php" class="nav-link active">Dashboard</a>
-                <a href="inventory.php" class="nav-link">Inventory</a>
-                <a href="donations.php" class="nav-link">Donations</a>
-                <a href="blood_requests.php" class="nav-link">Blood Requests</a>
-                <a href="distribution.php" class="nav-link">Distribution</a>
-                <a href="analytics.php" class="nav-link">Analytics</a>
-                <a href="../includes/auth.php?logout=1" class="nav-link logout-btn">Logout</a>
-            </div>
-        </div>
-    </nav>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_bloodbank.php'; ?>
 
     <div class="dashboard-container">
         <div class="dashboard-header">
@@ -77,7 +100,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php endif; ?>
         
         <?php if (isset($error)): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
+            <div class="alert alert-error">
+                <?php 
+                if (strpos($error, 'Please fix') === 0) {
+                    echo nl2br(htmlspecialchars($error));
+                } else {
+                    echo htmlspecialchars($error);
+                }
+                ?>
+            </div>
         <?php endif; ?>
 
         <div class="inventory-actions">
@@ -88,10 +119,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <!-- Add Inventory Form -->
         <div id="addInventoryForm" class="admin-form" style="display: none;">
             <h3>Record Blood Collection</h3>
-            <form method="POST">
+            <form method="POST" id="inventoryForm" onsubmit="return validateInventoryForm()">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="blood_type">Blood Type</label>
+                        <label for="blood_type">Blood Type <span class="required">*</span></label>
                         <select id="blood_type" name="blood_type" required>
                             <option value="">Select Blood Type</option>
                             <option value="A+">A+</option>
@@ -103,16 +134,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="O+">O+</option>
                             <option value="O-">O-</option>
                         </select>
+                        <small class="form-error" id="blood_error"></small>
                     </div>
                     
                     <div class="form-group">
-                        <label for="quantity">Quantity (Units)</label>
-                        <input type="number" id="quantity" name="quantity" min="1" required>
+                        <label for="quantity">Quantity (Units) <span class="required">*</span></label>
+                        <input type="number" id="quantity" name="quantity" min="1" max="1000" required>
+                        <small class="form-error" id="qty_error"></small>
                     </div>
                     
                     <div class="form-group">
-                        <label for="expiration_date">Expiration Date</label>
-                        <input type="date" id="expiration_date" name="expiration_date" required>
+                        <label for="expiration_date">Expiration Date <span class="required">*</span></label>
+                        <input type="date" id="expiration_date" name="expiration_date" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" max="<?php echo date('Y-m-d', strtotime('+42 days')); ?>" required>
+                        <small class="form-error" id="exp_error"></small>
                     </div>
                 </div>
                 
@@ -216,6 +250,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         function hideAddForm() {
             document.getElementById('addInventoryForm').style.display = 'none';
+        }
+        
+        function validateInventoryForm() {
+            // Clear previous error messages
+            document.getElementById('blood_error').textContent = '';
+            document.getElementById('qty_error').textContent = '';
+            document.getElementById('exp_error').textContent = '';
+            
+            const bloodType = document.getElementById('blood_type').value;
+            const quantity = document.getElementById('quantity').value;
+            const expirationDate = document.getElementById('expiration_date').value;
+            
+            let isValid = true;
+            
+            // Validate blood type
+            if (!bloodType) {
+                document.getElementById('blood_error').textContent = 'Blood type must be selected.';
+                isValid = false;
+            }
+            
+            // Validate quantity
+            if (!quantity || isNaN(quantity)) {
+                document.getElementById('qty_error').textContent = 'Quantity must be a valid number.';
+                isValid = false;
+            } else if (quantity < 1) {
+                document.getElementById('qty_error').textContent = 'Quantity must be at least 1 unit.';
+                isValid = false;
+            } else if (quantity > 1000) {
+                document.getElementById('qty_error').textContent = 'Quantity cannot exceed 1000 units.';
+                isValid = false;
+            }
+            
+            // Validate expiration date
+            if (!expirationDate) {
+                document.getElementById('exp_error').textContent = 'Expiration date is required.';
+                isValid = false;
+            } else {
+                const selectedDate = new Date(expirationDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate <= today) {
+                    document.getElementById('exp_error').textContent = 'Expiration date must be in the future.';
+                    isValid = false;
+                }
+                
+                // Check if not more than 42 days
+                const maxDate = new Date();
+                maxDate.setDate(maxDate.getDate() + 42);
+                if (selectedDate > maxDate) {
+                    document.getElementById('exp_error').textContent = 'Expiration date cannot be more than 42 days from now.';
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
         }
         
         function distributeBlood(id) {

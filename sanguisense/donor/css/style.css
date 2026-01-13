@@ -377,6 +377,28 @@ body {
     font-size: 1rem;
 }
 
+/* Profile form labels - white color for better visibility */
+.profile-form .form-group label {
+    color: #ffffff;
+}
+
+/* Fieldset sections for form grouping */
+.form-section {
+    border: 1px solid rgba(0,0,0,0.06);
+    background: rgba(255,255,255,0.02);
+    padding: 1rem 1.2rem 1.2rem;
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+}
+
+.form-section legend {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary-red);
+    padding: 0 0.5rem;
+    margin-left: 0.5rem;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -397,6 +419,20 @@ body {
     outline: none;
     border-color: var(--primary-red);
     box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+}
+
+/* Form Validation Error Display */
+.form-error {
+    display: block;
+    color: #c10;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.required {
+    color: #c10;
+    font-weight: bold;
 }
 
 .alert {
@@ -608,6 +644,8 @@ body {
 .profile-container {
     display: grid;
     gap: 2rem;
+    grid-template-columns: 1fr 320px; /* main form / side actions */
+    align-items: start;
 }
 
 .profile-form {
@@ -626,11 +664,33 @@ body {
 }
 
 .profile-actions {
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-    backdrop-filter: blur(10px);
-    padding: 2.5rem;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    backdrop-filter: blur(6px);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-summary {
+    width: 100%;
+}
+
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+    color: var(--white);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    margin: 0 auto;
 }
 
 /* Modal Styles */
@@ -855,4 +915,213 @@ body {
     .schedule-form {
         padding: 1.5rem;
     }
+}
+
+/* ===== DATA TABLE AND HISTORY PAGE STYLES ===== */
+.donations-list {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 2rem;
+}
+
+.donations-list h3 {
+    color: var(--white);
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.data-table {
+    overflow-x: auto;
+}
+
+.data-table table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #e0e0e0;
+}
+
+.data-table thead {
+    background: rgba(200, 16, 46, 0.2);
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.data-table thead th {
+    padding: 1rem;
+    text-align: left;
+    color: var(--yellow);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(200, 16, 46, 0.1);
+}
+
+.data-table tbody td {
+    padding: 1rem;
+    color: #d0d0d0;
+}
+
+.status-scheduled {
+    background: rgba(100, 149, 237, 0.3);
+    color: #87ceeb;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-completed {
+    background: rgba(39, 174, 96, 0.3);
+    color: #58d68d;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-cancelled {
+    background: rgba(220, 53, 69, 0.3);
+    color: #f8919a;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.text-muted {
+    color: #888;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, rgba(200, 16, 46, 0.2), rgba(139, 0, 0, 0.2));
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(200, 16, 46, 0.3);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-red);
+    background: linear-gradient(135deg, rgba(200, 16, 46, 0.3), rgba(139, 0, 0, 0.3));
+}
+
+.stat-card h3 {
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.stat-number {
+    color: var(--yellow);
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.history-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ===== FORM LABEL VISIBILITY FIX ===== */
+/* Ensure all form labels are visible across all form contexts */
+label {
+    color: var(--dark-gray) !important;
+    font-weight: 600 !important;
+}
+
+.profile-form label,
+.schedule-form label,
+.change-password-container label,
+.eligibility-form label {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    display: block !important;
+    margin-bottom: 0.7rem !important;
+    font-size: 1rem !important;
+}
+
+/* Eligibility form section titles and subtitles */
+.form-section .section-title {
+    color: #ffffff !important;
+    font-weight: bold !important;
+    font-size: 1.1rem !important;
+}
+
+.form-section .section-subtitle {
+    color: #e0e0e0 !important;
+    font-size: 0.95rem !important;
+}
+
+/* Main question text in eligibility form */
+.eligibility-form .form-group > label {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Age and Weight labels - light blue */
+.eligibility-form #age,
+.eligibility-form #weight {
+    /* labels for age and weight */
+}
+
+.eligibility-form .form-group > div > label[for="age"],
+.eligibility-form .form-group > div > label[for="weight"] {
+    color: #87ceeb !important;
+    font-weight: 600 !important;
+}
+
+/* Radio button labels in eligibility form */
+.eligibility-form .radio-option label {
+    color: #ffffff !important;
+}
+
+.profile-form input,
+.profile-form select,
+.schedule-form input,
+.schedule-form select,
+.change-password-container input,
+.eligibility-form input,
+.eligibility-form select,
+.eligibility-form textarea {
+    color: var(--text-dark) !important;
+    background-color: white !important;
+}
+
+/* Specific fix for profile page form labels */
+.profile-card label {
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+/* Specific fix for schedule page form labels */
+.schedule-container label {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Specific fix for eligibility check labels */
+.eligibility-container label {
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+/* Form fieldset styling */
+fieldset label {
+    color: #333 !important;
+    font-weight: 600 !important;
 }

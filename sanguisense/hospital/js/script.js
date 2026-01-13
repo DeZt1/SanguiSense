@@ -167,6 +167,22 @@ function viewDonor(id) {
 }
 
 function contactDonor(id) {
-    alert('Contact donor ' + id);
-    // window.location.href = 'contact_donor.php?id=' + id;
+    window.location.href = 'contact_donor.php?id=' + id;
+}
+
+// Blood request functions
+function fulfillRequest(requestId) {
+    if (confirm('Mark this blood request as fulfilled?')) {
+        window.location.href = 'blood_requests.php?action=fulfill&id=' + requestId;
+    }
+}
+
+function cancelRequest(requestId) {
+    if (confirm('Cancel this blood request?')) {
+        window.location.href = 'blood_requests.php?action=cancel&id=' + requestId;
+    }
+}
+
+function contactBloodBank(requestId) {
+    window.location.href = 'contact_bloodbank.php?request_id=' + requestId;
 }

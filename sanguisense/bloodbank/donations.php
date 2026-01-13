@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['record_donation'])) {
     
     try {
         // Record the donation
-        $stmt = $pdo->prepare("INSERT INTO donations (donor_id, facility_id, blood_type, donation_date, quantity, status) VALUES (?, ?, ?, ?, ?, 'completed')");
+        $stmt = $pdo->prepare("INSERT INTO donations (donor_id, facility_id, blood_type, donation_date, quantity, status) VALUES (?, ?, ?, ?, ?, 'fulfilled')");
         $stmt->execute([$donor_id, $facility['id'], $blood_type, $donation_date, $quantity]);
         
         // Update donor's last donation date
@@ -64,24 +64,7 @@ $all_donors = $pdo->query("SELECT id, name, blood_type FROM users WHERE user_typ
 <body>
     <div class="background-animation"></div>
     
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2><a href="dashboard.php" class="logo-link">
-                    <span class="blood-drop">🩸</span>SanguiSense Blood Bank
-                </a></h2>
-            </div>
-             <div class="nav-menu">
-                <a href="dashboard.php" class="nav-link active">Dashboard</a>
-                <a href="inventory.php" class="nav-link">Inventory</a>
-                <a href="donations.php" class="nav-link">Donations</a>
-                <a href="blood_requests.php" class="nav-link">Blood Requests</a>
-                <a href="distribution.php" class="nav-link">Distribution</a>
-                <a href="analytics.php" class="nav-link">Analytics</a>
-                <a href="../includes/auth.php?logout=1" class="nav-link logout-btn">Logout</a>
-            </div>
-        </div>
-    </nav>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_bloodbank.php'; ?>
 
     <div class="dashboard-container">
         <div class="dashboard-header">

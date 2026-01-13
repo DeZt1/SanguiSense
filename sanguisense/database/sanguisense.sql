@@ -136,15 +136,15 @@ CREATE TABLE IF NOT EXISTS blood_requests (
 
 -- Insert sample data with proper password hashes (password = 'password')
 INSERT INTO users (email, password, name, user_type, blood_type, phone, address, city) VALUES
-('admin@hospital.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Hospital Admin', 'hospital_admin', NULL, '1234567890', '123 Hospital St', 'Cityville'),
-('admin@bloodbank.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Blood Bank Admin', 'bloodbank_admin', NULL, '1234567891', '456 Blood Ave', 'Cityville'),
-('donor@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Donor', 'donor', 'O+', '1234567892', '789 Donor Lane', 'Cityville'),
-('donor2@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Sarah Smith', 'donor', 'A-', '1234567893', '456 Donor Ave', 'Townsville');
+('admin@hospital.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Hospital Admin', 'hospital_admin', NULL, '1234567890', '456 Medical Avenue', 'Cabanatuan'),
+('admin@bloodbank.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Blood Bank Admin', 'bloodbank_admin', NULL, '1234567891', '789 Health Boulevard', 'San Fernando'),
+('donor@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Donor', 'donor', 'O+', '1234567892', '123 Donor Street', 'Cabanatuan'),
+('donor2@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Sarah Smith', 'donor', 'A-', '1234567893', '456 Donor Avenue', 'San Jose');
 
 INSERT INTO facilities (name, type, address, city, phone, email, admin_id) VALUES
-('City General Hospital', 'hospital', '123 Hospital St', 'Cityville', '1234567890', 'contact@cityhospital.com', 1),
-('Central Blood Bank', 'blood_bank', '456 Blood Ave', 'Cityville', '1234567891', 'contact@centralbloodbank.com', 2),
-('Town Medical Center', 'hospital', '789 Health Blvd', 'Townsville', '1234567894', 'contact@townmedical.com', NULL);
+('Cabanatuan General Hospital', 'hospital', '456 Medical Avenue', 'Cabanatuan', '1234567890', 'contact@cabanatuan-hospital.com', 1),
+('San Fernando Blood Bank', 'blood_bank', '789 Health Boulevard', 'San Fernando', '1234567891', 'contact@sanfernando-bloodbank.com', 2),
+('San Jose Medical Center', 'hospital', '123 Healthcare Road', 'San Jose', '1234567894', 'contact@sanjose-medical.com', NULL);
 
 INSERT INTO inventory (facility_id, blood_type, quantity, expiration_date, status) VALUES
 (1, 'O+', 25, '2024-12-31', 'available'),

@@ -170,8 +170,7 @@ function hideDeleteModal() {
 
 function cancelDonation(donationId) {
     if (confirm('Are you sure you want to cancel this donation?')) {
-        // This would typically make an AJAX call
-        window.location.href = 'cancel_donation.php?id=' + donationId;
+        window.location.href = 'history.php?action=cancel&id=' + donationId;
     }
 }
 

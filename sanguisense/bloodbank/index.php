@@ -45,12 +45,6 @@ if (isLoggedIn()) {
                 <a href="login.php" class="btn btn-primary" style="text-decoration: none; display: block; background: var(--bloodbank-purple);">
                     Blood Bank Login
                 </a>
-                <a href="../donor/index.php" class="btn btn-secondary" style="text-decoration: none; display: block;">
-                    Go to Donor Portal
-                </a>
-                <a href="../hospital/index.php" class="btn btn-secondary" style="text-decoration: none; display: block;">
-                    Go to Hospital Portal
-                </a>
             </div>
         </div>
     </div>

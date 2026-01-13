@@ -496,6 +496,11 @@ body {
     font-size: 1rem;
 }
 
+/* Profile form labels - white color for better visibility */
+.profile-form .form-group label {
+    color: #ffffff;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -516,6 +521,20 @@ body {
     outline: none;
     border-color: var(--primary-red);
     box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+}
+
+/* Form Validation Error Display */
+.form-error {
+    display: block;
+    color: #c10;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.required {
+    color: #c10;
+    font-weight: bold;
 }
 
 .form-row {

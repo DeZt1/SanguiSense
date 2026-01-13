@@ -10,22 +10,12 @@
 <body>
     <div class="background-animation"></div>
     
-<nav class="navbar">
-    <div class="nav-container">
-        <div class="nav-logo">
-            <h2><a href="index.php" class="logo-link">
-                <span class="blood-drop">🩸</span>SanguiSense
-            </a></h2>
-        </div>
-        <div class="nav-menu">
-            <a href="dashboard.php" class="nav-link">Dashboard</a>
-            <a href="profile.php" class="nav-link">Profile</a>
-            <a href="schedule.php" class="nav-link">Schedule</a>
-            <a href="history.php" class="nav-link">History</a>
-            <a href="../includes/auth.php?logout=1" class="nav-link logout-btn">Logout</a>
-        </div>
-    </div>
-</nav>
+    <!-- Navbar - Only visible when user is logged in -->
+    <?php 
+    if (session_status() !== PHP_SESSION_ACTIVE) { session_start(); }
+    if (isset($_SESSION['user_id'])): ?>
+        <?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_donor.php'; ?>
+    <?php endif; ?>
 
     <section class="hero">
         <div class="hero-content">

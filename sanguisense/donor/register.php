@@ -1,24 +1,48 @@
 <?php
 include '../includes/config.php';
+include_once __DIR__ . '/../includes/locations.php';
+
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
     $blood_type = $_POST['blood_type'];
-    $phone = $_POST['phone'];
-    $address = $_POST['address'];
-    $city = $_POST['city'];
+    $phone = trim($_POST['phone']);
+    $address = trim($_POST['address']);
+    $city = trim($_POST['city']);
     
-    try {
-        $stmt = $pdo->prepare("INSERT INTO users (email, password, name, user_type, blood_type, phone, address, city) VALUES (?, ?, ?, 'donor', ?, ?, ?, ?)");
-        $stmt->execute([$email, $password, $name, $blood_type, $phone, $address, $city]);
+    // Validation
+    if (empty($name) || empty($email) || empty($password) || empty($blood_type) || empty($phone) || empty($address) || empty($city)) {
+        $error = "All fields are required";
+    } elseif ($password !== $confirm_password) {
+        $error = "Passwords do not match";
+    } elseif (strlen($password) < 6) {
+        $error = "Password must be at least 6 characters";
+    } elseif (!in_array($city, get_municipalities())) {
+        $error = "Sorry, we only accept donors from Region 3, Nueva Ecija. Please select a valid city from the list.";
+    } else {
+        // Check if email already exists
+        $checkStmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $checkStmt->execute([$email]);
         
-        // Redirect to login
-        header("Location: login.php?success=1");
-        exit();
-    } catch(PDOException $e) {
-        $error = "Registration failed: " . $e->getMessage();
+        if ($checkStmt->fetch()) {
+            $error = "Email already registered";
+        } else {
+            try {
+                $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+                $stmt = $pdo->prepare("INSERT INTO users (email, password, name, user_type, blood_type, phone, address, city, is_eligible, created_at) VALUES (?, ?, ?, 'donor', ?, ?, ?, ?, TRUE, NOW())");
+                $stmt->execute([$email, $hashedPassword, $name, $blood_type, $phone, $address, $city]);
+                
+                // Redirect to login
+                header("Location: login.php?success=1");
+                exit();
+            } catch(PDOException $e) {
+                $error = "Registration failed: " . $e->getMessage();
+            }
+        }
     }
 }
 ?>
@@ -34,18 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="background-animation"></div>
     
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2><a href="index.php">SanguiSense</a></h2>
-            </div>
-            <div class="nav-menu">
-                <a href="index.php" class="nav-link">Home</a>
-                <a href="login.php" class="nav-link">Login</a>
-            </div>
-        </div>
-    </nav>
-
     <div class="auth-container">
         <div class="auth-form">
             <h2>Become a Donor</h2>
@@ -67,7 +79,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" placeholder="At least 6 characters" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required>
                 </div>
                 
                 <div class="form-group">
@@ -96,8 +113,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 
                 <div class="form-group">
-                    <label for="city">City</label>
-                    <input type="text" id="city" name="city" required>
+                    <label for="city">City (Region 3, Nueva Ecija)</label>
+                    <select id="city" name="city" required>
+                        <option value="">-- Select City --</option>
+                        <?php foreach (get_municipalities() as $m): ?>
+                            <option value="<?php echo htmlspecialchars($m); ?>"><?php echo htmlspecialchars($m); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small style="color: #999; display: block; margin-top: 5px;">We only accept donors from Region 3, Nueva Ecija</small>
                 </div>
                 
                 <button type="submit" class="btn btn-primary">Register</button>

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/db_connect.php';
 include '../includes/auth.php';
 requireLogin();
 
@@ -17,24 +18,7 @@ $notifications = getNotifications($_SESSION['user_id']);
 <body>
     <div class="background-animation"></div>
     
-<nav class="navbar">
-    <div class="nav-container">
-        <div class="nav-logo">
-            <h2><a href="index.php" class="logo-link">
-                <span class="blood-drop">🩸</span>SanguiSense
-            </a></h2>
-        </div>
-        <div class="nav-menu">
-            <a href="dashboard.php" class="nav-link">Dashboard</a>
-            <a href="profile.php" class="nav-link">Profile</a>
-            <a href="schedule.php" class="nav-link">Schedule</a>
-            <a href="history.php" class="nav-link">History</a>
-            <a href="../includes/auth.php?logout=1" class="nav-link logout-btn">Logout</a>
-        </div>
-    </div>
-</nav>
-
-    <div class="dashboard-container">
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_donor.php'; ?>    <div class="dashboard-container">
         <div class="dashboard-header">
             <h1>Welcome, <?php echo $user['name']; ?></h1>
             <p>Blood Type: <?php echo $user['blood_type']; ?></p>
@@ -44,7 +28,8 @@ $notifications = getNotifications($_SESSION['user_id']);
             <div class="dashboard-card">
                 <h3>Quick Actions</h3>
                 <div class="action-buttons">
-                    <a href="schedule.php" class="btn btn-primary">Schedule Donation</a>
+                    <a href="eligibility_check.php" class="btn btn-primary">Check Eligibility</a>
+                    <a href="schedule.php" class="btn btn-secondary">Schedule Donation</a>
                     <a href="profile.php" class="btn btn-secondary">Update Profile</a>
                 </div>
             </div>
@@ -66,25 +51,30 @@ $notifications = getNotifications($_SESSION['user_id']);
                 <?php endif; ?>
             </div>
 
-            <div class="dashboard-card">
-                <h3>Donation Eligibility</h3>
-                <?php
-                $last_donation = $user['last_donation_date'];
-                $eligible = true;
-                $message = "You are eligible to donate blood";
-                
-                if ($last_donation) {
-                    $next_donation_date = date('Y-m-d', strtotime($last_donation . ' + 56 days')); // 8 weeks
-                    if (strtotime($next_donation_date) > time()) {
-                        $eligible = false;
-                        $message = "You can donate again after " . date('M j, Y', strtotime($next_donation_date));
-                    }
+            <?php
+            // Eligibility status UI removed; keep survey prompt when not completed
+            $eligibility_status = null;
+            if (isset($_SESSION['eligibility_status'])) {
+                $eligibility_status = $_SESSION['eligibility_status'];
+            } else {
+                try {
+                    global $pdo;
+                    $stmt = $pdo->prepare("SELECT eligibility_status FROM users WHERE id = ?");
+                    $stmt->execute([$_SESSION['user_id']]);
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $eligibility_status = $row['eligibility_status'] ?? null;
+                } catch (Exception $e) {
+                    $eligibility_status = null;
                 }
-                ?>
-                <div class="eligibility-status <?php echo $eligible ? 'eligible' : 'not-eligible'; ?>">
-                    <p><?php echo $message; ?></p>
+            }
+
+            if ($eligibility_status === null): ?>
+                <div class="dashboard-card">
+                    <h3>Complete Eligibility Survey</h3>
+                    <p>You must complete the eligibility survey before we can determine if you're eligible to donate.</p>
+                    <a href="eligibility_check.php" class="btn btn-primary" style="margin-top: 15px; display: inline-block;">Take Survey Now</a>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 

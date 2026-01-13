@@ -36,7 +36,6 @@ if (isLoggedIn()) {
                 <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
                     <h3 style="color: var(--hospital-blue); margin-bottom: 1rem;">Hospital Admin Access</h3>
                     <div style="text-align: left; font-size: 0.9rem;">
-                        <p><strong>Test Account:</strong><br>admin@hospital.com<br>Password: password</p>
                     </div>
                 </div>
             </div>
@@ -44,12 +43,6 @@ if (isLoggedIn()) {
             <div style="display: grid; gap: 1rem;">
                 <a href="login.php" class="btn btn-primary" style="text-decoration: none; display: block; background: var(--hospital-blue);">
                     Hospital Login
-                </a>
-                <a href="../donor/index.php" class="btn btn-secondary" style="text-decoration: none; display: block;">
-                    Go to Donor Portal
-                </a>
-                <a href="../bloodbank/index.php" class="btn btn-secondary" style="text-decoration: none; display: block;">
-                    Go to Blood Bank Portal
                 </a>
             </div>
         </div>

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/db_connect.php';
 include '../includes/auth.php';
 requireHospitalAdmin();
 
@@ -47,24 +48,7 @@ if ($facility) {
 <body>
     <div class="background-animation"></div>
     
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2><a href="dashboard.php" class="logo-link">
-                    <span class="blood-drop">🏥</span>SanguiSense Hospital
-                </a></h2>
-            </div>
-            <div class="nav-menu">
-                <a href="dashboard.php" class="nav-link active">Dashboard</a>
-                <a href="inventory.php" class="nav-link">Blood Inventory</a>
-                <a href="donors.php" class="nav-link">Donors</a>
-                <a href="appointments.php" class="nav-link">Appointments</a>
-                <a href="blood_requests.php" class="nav-link">Blood Requests</a>
-                <a href="analytics.php" class="nav-link">Analytics</a>
-                <a href="../includes/auth.php?logout=1" class="nav-link logout-btn">Logout</a>
-            </div>
-        </div>
-    </nav>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/sanguisense/includes/sidebar_hospital.php'; ?>
 
     <div class="dashboard-container">
         <div class="dashboard-header">

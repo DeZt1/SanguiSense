@@ -31,17 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php if (isset($error)): ?>
                 <div class="alert alert-error"><?php echo $error; ?></div>
             <?php endif; ?>
-            
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
-                    <h3 style="color: var(--hospital-blue); margin-bottom: 1rem;">Test Account</h3>
-                    <div style="text-align: left; font-size: 0.9rem;">
-                        <p><strong>Email:</strong> admin@hospital.com</p>
-                        <p><strong>Password:</strong> password</p>
-                    </div>
-                </div>
-            </div>
-            
             <form method="POST">
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -60,11 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 Don't have an account? <a href="register.php">Register as Hospital Admin</a>
             </p>
             <p class="auth-link">
-                <a href="index.php">← Back to Hospital Portal</a>
             </p>
-            <p class="auth-link">
-                <a href="../donor/index.php">Go to Donor Portal</a> | 
-                <a href="../bloodbank/index.php">Go to Blood Bank</a>
             </p>
         </div>
     </div>
